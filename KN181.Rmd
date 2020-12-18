@@ -1,0 +1,201 @@
+---
+title: KN181 Example for Weighted Parametric MTP Manuscript
+author: Zifang Guo <zifang.guo@merck.com>
+date: "Report Generated on: `r format(Sys.time(), '%d %B %Y')`"  
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    theme: flatly
+    highlight: tango
+  html_notebook:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+---
+
+```{r, message = FALSE, echo = FALSE, warning = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  dev = "png", 
+  dev.args= list(type = "cairo")
+)
+```
+
+```{r echo=FALSE, message=FALSE, warning = FALSE}
+rm(list=ls())
+library(gsDesign)
+library(mvtnorm)
+library(matrixcalc)
+library(dplyr)
+library(kableExtra)
+```
+
+# Overview
+
+We compute the nominal p-value boundary of KN181 OS in squamous cell carcinoma (SC) and all comer populations at final analysis using the weighted paramteric MTP method. The study has 3 populations and the initial alpha was split between the 3 hypotheses. Given that OS in the CPS10 population was hit, we remove this hypothesis from the testing and consider correlation between the remaining two populations only.
+
+![KN181 JCO Multiplicity](181_multiplicity.JPG)
+
+# Event Counts
+
+Below table summarizes the observed inforamtion at FA based on the JCO publication. 
+
+
+```{r}
+##### Event Count
+obs <-  bind_rows(
+  tibble(Hypothesis="SC", Event = 346, Observed_P = 0.0095),
+  tibble(Hypothesis="CPS10", Event = 190, Observed_P = 0.0074, Boundary_in_Text=0.00853),
+  tibble(Hypothesis="All", Event = 553, Observed_P = 0.056)
+  )
+
+obs %>% kable(Caption = "Observed Info") %>% kable_styling()
+
+```
+
+It was  specified that for both SC and all comer populations the nominal boundary at FA was 0.0077 at the initial alpha of 0.008 with a LDOF alpha spending function. As such, we can estimate the number of events at IA assuming the bound was calculated with actual information fraction. Of note, in the protocol it was specified calendar time spending is used for alpha spending. However this information was not available in the JCO publication.
+
+```{r message=FALSE}
+## Population 1 = SC, Population 2 = All comer
+## Estimate IA event count based on published boundary and alpha spending
+n11 <- 221
+n21 <- 353
+## Event count at FA
+n12 <- 346
+n22 <- 553
+
+## Information fraction of each hypothesis
+if1 <- n11/n12
+if2 <- n21/n22
+
+## Confirm nominal boundary at FA matches supplemental data in JCO publication: 
+## 0.0077 for both population at iniitial alpha of 0.008
+d1 <- gsDesign(k=2, test.type=1, alpha=0.008, timing = if1, sfu=sfLDOF) 
+1-pnorm(d1$upper$bound)
+
+d2<- gsDesign(k=2, test.type=1, alpha=0.008, timing = if2, sfu=sfLDOF)
+1-pnorm(d2$upper$bound)
+```
+
+# Correlation Matrix  
+
+Since the SC population is nested within all comer, the correlation matrix can be computed accordingly. 
+
+```{r}
+## Correlation Matrix of (Z11, Z21, Z12, Z22) ##
+cor_fn <- function(n1,n2,n3) {
+  return(n1/sqrt(n2*n3))
+}
+
+cor_mat <- matrix(c(
+  1,cor_fn(n11,n11,n21),  cor_fn(n11,n11,n12),  cor_fn(n11,n11,n22),  
+  cor_fn(n11,n11,n21), 1, cor_fn(n11,n21,n12), cor_fn(n21,n21,n22),
+  cor_fn(n11,n11,n12), cor_fn(n11,n12,n21), 1, cor_fn(n12,n12,n22),
+  cor_fn(n11,n11,n22), cor_fn(n21,n21,n22), cor_fn(n12,n12,n22), 1),
+  nrow=4, byrow=TRUE)
+cor_mat
+
+is.symmetric.matrix(cor_mat)
+is.positive.semi.definite(cor_mat)
+```
+
+# Boundaries using Method 3(b)
+
+We then compute the nominal p-value boundary at both IA and FA for these two hypotheses after alpha of 0.009 being reallocated to all comer from CPS10. Spending method 3(b) of Section 3.2.1 in the manuscript was assumed in this calculation (one spending function spends alpha for all hypotheses together). Unfortunatly, even after accounting for correlations, the p-value of the SC population still does not pass the boundary at FA (observed 0.0095, boundary 0.0090).
+
+```{r}
+########################### Method 3(b) ####################################
+## Assume same info fraction
+info_frac <- if1
+# Cummulative spending at IA after alpha reallocation from CPS10 to all comer
+a1 <- sfLDOF(t=info_frac, alpha=0.025, param=0)$spend
+# Weight
+w <- c(0.008,0.017)/0.025 
+
+## function to find astar
+astar1_find <- function(astar, a, w, sig){
+  1 - a - pmvnorm(lower = -Inf, upper = qnorm(1 - w * astar), 
+                  sigma = sig,
+                  algorithm=GenzBretz(maxpts=50000,abseps=0.00001))
+}
+## IA nominal boundary
+astar1 <- uniroot(astar1_find, lower = a1, upper = 0.025, a = a1, 
+                  w = w, sig = cor_mat[1:2,1:2], tol=1e-10)$root
+alpha_ia <- astar1*w
+alpha_ia
+
+############ Boundary at FA after alpha reallocation from CPS10 to all comer
+astar2_find <- function(astar, a, alpha_ia, w, sig){
+  1 - a - pmvnorm(lower = -Inf, upper = c(qnorm(1-alpha_ia),qnorm(1 - w * astar)), 
+                  sigma = sig,
+                  algorithm=GenzBretz(maxpts=50000,abseps=0.00001))
+}
+astar2 <- uniroot(astar2_find, lower = 0.001, upper = 0.05, a = 0.025, 
+                  alpha_ia=alpha_ia, w = w, sig = cor_mat, tol=1e-10)$root
+alpha_fa <- astar2*w
+alpha_fa
+ 
+```
+
+# Boundaries using Method 3(c)
+
+We next compute the nominal p-value boundary assuming independent LDOF spending was used for these two hypotheses (method 3(c) of Section 3.2.1 in the manuscript). Unfortunatly, even after accounting for correlations, the p-value of the SC population still does not pass the boundary at FA (observed 0.0095, boundary 0.0094).
+
+```{r}
+########################### Method 3(c) ####################################
+#### Bonferroni boundaries ##
+a1 <-  1- pnorm(gsDesign(k=2, test.type=1, timing=if1, alpha=0.008, 
+                          sfu=sfLDOF, sfupar=0)$upper$bound)
+
+a2 <-  1- pnorm(gsDesign(k=2, test.type=1, timing=if2, alpha=0.017, 
+                         sfu=sfLDOF, sfupar=0)$upper$bound)
+
+######## Weighted Parametric MTP ########
+####  IA  ####
+## function to find inflation factor xi at IA
+xi1_find <- function(a, astar, xi, sig){
+  # a is cummulative spending for the intersection hypotheses
+  # astar is the nominal p-value boundary from the Bonferroni approach
+  # xi is the inflation factor
+  # sig is the correlation matrix
+  1 - a - pmvnorm(lower = -Inf, upper = qnorm(1 - xi*astar), 
+                  sigma = sig,
+                  algorithm=GenzBretz(maxpts=50000,abseps=0.00001))
+}
+astar1  <- c(a1[1], a2[1])
+xi1 <- uniroot(xi1_find, lower = 1, upper = 10, 
+                   a = sum(astar1), astar=astar1, 
+                   sig = cor_mat[1:2,1:2], tol=1e-10)$root
+## MTP Bounary at IA
+alpha_ia <- xi1*astar1
+alpha_ia
+
+#####   FA    ####
+## function to find inflation factor xi at FA
+xi2_find <- function(a, astar, alpha_ia, xi, sig){
+  # a is cummulative spending for the intersection hypotheses
+  # astar is the nominal p-value boundary from the Bonferroni approach
+  # alpha_ia is the alpha boundary at IA using the MTP approach
+  # xi is the inflation factor
+  # sig is the correlation matrix
+  1 - a - pmvnorm(lower = -Inf, upper =c(qnorm(1-alpha_ia), qnorm(1 - xi*astar)), 
+                  sigma = sig,
+                  algorithm=GenzBretz(maxpts=50000,abseps=0.00001))
+}
+astar2 <- c(a1[2], a2[2])
+
+xi2 <- uniroot(xi2_find, lower = 1, upper = 10, 
+                   a = 0.025, astar=astar2, 
+                   alpha_ia=alpha_ia,
+                   sig = cor_mat, tol=1e-10)$root
+# MTP Boundary at FA
+alpha_fa <- xi2*astar2
+alpha_fa
+
+```
+
+
+ 
