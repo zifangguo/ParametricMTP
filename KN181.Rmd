@@ -35,7 +35,7 @@ library(kableExtra)
 
 # Overview
 
-We compute the nominal p-value boundary of KN181 OS in squamous cell carcinoma (SC) and all comer populations at final analysis using the weighted paramteric MTP method. The study has 3 populations and the initial alpha was split between the 3 hypotheses. Given that OS in the CPS10 population was hit, we remove this hypothesis from the testing and consider correlation between the remaining two populations only.
+We compute the nominal p-value boundary of KN181 OS in squamous cell carcinoma (SC) and all comer populations at final analysis using the weighted paramteric MTP method. The study has 3 populations and the initial alpha was split between the 3 hypotheses. Given that OS in the CPS10 population was hit, we remove this hypothesis from the testing and consider correlation between the remaining two populations only. All infomration used in this document is based on public available information.
 
 ![KN181 JCO Multiplicity](181_multiplicity.JPG)
 
