@@ -15,7 +15,7 @@ library(testthat)
 # library(matrixcalc)
 
 
-setwd("/work/bards/guozi/GSD")
+setwd("/work/bards/guozi/GSD/ParametricMTP")
 getwd()
 
 source("bonf_fn.R")

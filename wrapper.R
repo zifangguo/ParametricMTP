@@ -2,7 +2,7 @@
 ######## Call function of the GSD simulations #############
 
 # call this function with:
-# cd /work/bards/guozi/GSD
+# cd /work/bards/guozi/GSD/ParametricMTP
 # module load R/4.0.2
 # R --vanilla --slave < wrapper.R
 

@@ -3,7 +3,7 @@
 rm(list=ls())
 library(kableExtra)
 library(tidyverse)
-setwd("/work/bards/guozi/GSD")
+setwd("/work/bards/guozi/GSD/ParametricMTP")
 
 result <- NULL
 for (i in 1:2){
