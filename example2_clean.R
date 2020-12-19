@@ -32,7 +32,7 @@ hplot <- hGraph(3,alphaHypotheses=alphaHypotheses,m=m,
 hplot
 
 jpeg("ex2_multiplicity.jpeg", units="in", width=9, height=5, res=300)
-hplot
+# hplot
 dev.off()
 
 ######### Event Counts #######
@@ -57,11 +57,6 @@ n12 <- nt12+nc2
 n22 <- nt22+nc2
 n32 <- nt32+nc2
 
-## Information fraction of each hypothesis
-if1 <- n11/n12
-if2 <- n21/n22
-if3 <- n31/n32
-
 ######## Correlation Matrix for (Z11,Z21,Z31,Z12,Z22,Z32) ######
 ## top 3x3 is IA correlation ##
 cor_fn <- function(n1,n2,n3) {
@@ -79,36 +74,55 @@ cor_mat <- matrix(c(
 ##################################################################
 ################# Weighted Bonferroni Boundaries #################
 ##################################################################
+
+# Although in this example the information fraction is the ratio 
+# of the actual event counts at IA/FA. In practice at the time 
+# of IA, one does not know the final actual event count. 
+# Information fraction used for spending needs to be calculated as 
+# Actual event at IA / Planned event at FA. The actual event at FA
+# should be used to account for correlation to compute bounds.
+# Example code below accounts for this situation.
+
+# Information fraction of each hypothesis
+if1 <- n11/n12
+if2 <- n21/n22
+if3 <- n31/n32
+
+# event count of each hypothesis at IA and FA
+e1 <- c(n11, n12)
+e2 <- c(n21, n22)
+e3 <- c(n31, n32)
+
 # Individual Hypothesis at full alpha
-a1_ind <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if1, 
+a1_ind <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if1, n.I=e1, 
                             alpha=0.025,
                             sfu=sfLDOF, sfupar=0)$upper$bound)
-a2_ind <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if2, 
+a2_ind <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if2, n.I=e2,  
                             alpha=0.025,
                             sfu=sfLDOF, sfupar=0)$upper$bound)
-a3_ind <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if3, 
+a3_ind <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if3, n.I=e3,  
                             alpha=0.025,
                             sfu=sfLDOF, sfupar=0)$upper$bound)
 # H1 and H2 and H3
-a1_123 <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if1, 
+a1_123 <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if1, n.I=e1, 
                             alpha=0.025/3,
                             sfu=sfLDOF, sfupar=0)$upper$bound)
-a2_123 <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if2, 
+a2_123 <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if2, n.I=e2, 
                             alpha=0.025/3,
                             sfu=sfLDOF, sfupar=0)$upper$bound)
-a3_123 <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if3, 
+a3_123 <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if3, n.I=e3,
                             alpha=0.025/3,
                             sfu=sfLDOF, sfupar=0)$upper$bound)
 # H1 and H2
-a1_12 <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if1, 
+a1_12 <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if1, n.I=e1, 
                            alpha=0.025/2,
                            sfu=sfLDOF, sfupar=0)$upper$bound)
-a2_12 <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if2, 
+a2_12 <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if2, n.I=e2, 
                            alpha=0.025/2,
                            sfu=sfLDOF, sfupar=0)$upper$bound)
 # H1 and H3
 a1_13 <- a1_12
-a3_13 <- 1- pnorm(gsDesign(k=2, test.type=1, timing=if3, 
+a3_13 <- 1- pnorm(gsDesign(k=2, test.type=1, usTime=if3, n.I=e3, 
                            alpha=0.025/2,
                            sfu=sfLDOF, sfupar=0)$upper$bound)
 # H2 and H3
