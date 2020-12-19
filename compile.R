@@ -19,7 +19,7 @@ for (i in 1:2){
 for (i in 3){
   for (j in 1:4){
     for (task in 1:25) {
-      filenam <- paste("./outtable/sim_result_simtrial_HR", i, "_prop", j ,"_task", task, ".csv", sep="")
+    filenam <- paste("./outtable/sim_result_simtrial_HR", i, "_prop", j ,"_task", task, ".csv", sep="")
     tmp <- read_csv(filenam)
     result <-  bind_rows(result, tmp)
     }
@@ -37,7 +37,7 @@ final
 
 
 ## output to csv
-write.csv(final, file = "./results/sim_simtrial_all_fixN.csv", row.names = FALSE)
+write.csv(final, file = "./results/sim_simtrial_all_fixN_run2.csv", row.names = FALSE)
 
 ## output to latex format
 output <- final %>% 

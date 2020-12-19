@@ -65,22 +65,22 @@ MTP_fn <- function(p_test, cor_mat, events) {
   # bstar below represent p-value bound at FA
   ### H1 and H2 and H3 
   w <- c(0.3, 0.3, 0.4)
-  bstar123 <- w*uniroot(astar2_find, lower = 0.025, upper = 0.5, a = 0.025, 
+  bstar123 <- w*uniroot(astar2_find, lower = 0.0001, upper = 0.5, a = 0.025, 
                         alpha_ia = astar123, w = w, 
                         sig = cor_mat, tol = 1e-10)$root
   ### H1 and H2
   w <- c(0.5, 0.5)
-  bstar12 <- w*uniroot(astar2_find, lower = 0.025, upper = 0.5, a = 0.025, 
+  bstar12 <- w*uniroot(astar2_find, lower = 0.0001, upper = 0.5, a = 0.025, 
                        alpha_ia = astar12, w = w, 
                        sig = cor_mat[c(1,2,4,5), c(1,2,4,5)], tol=1e-10)$root
   ### H1 and H3
   w <- c(0.3, 0.7)
-  bstar13 <- w*uniroot(astar2_find, lower = 0.025, upper = 0.5, a = 0.025, 
+  bstar13 <- w*uniroot(astar2_find, lower = 0.0001, upper = 0.5, a = 0.025, 
                        alpha_ia = astar13, w = w, 
                        sig = cor_mat[c(1,3,4,6), c(1,3,4,6)], tol=1e-10)$root
   ### H2 and H3
   w <- c(0.3, 0.7)
-  bstar23 <- w*uniroot(astar2_find, lower = 0.025, upper = 0.5, a = 0.025, 
+  bstar23 <- w*uniroot(astar2_find, lower = 0.0001, upper = 0.5, a = 0.025, 
                        alpha_ia = astar23, w = w, 
                        sig = cor_mat[c(2,3,5,6), c(2,3,5,6)], tol=1e-10)$root
  

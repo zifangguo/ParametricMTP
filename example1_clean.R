@@ -32,7 +32,7 @@ hplot <- hGraph(3,alphaHypotheses=alphaHypotheses,m=m,
 hplot
 
 jpeg("ex1_multiplicity.jpeg", units="in", width=9, height=5, res=300)
-hplot
+# hplot
 dev.off()
 
 ######### Event Counts #######
@@ -174,28 +174,28 @@ astar_fa_find <- function(a, alpha_ia, astar, w, sig){
 # H1 and H2 and H3
 w <- c(0.3, 0.3, 0.4)
 astar_fa_123 <- w*uniroot(astar_fa_find, 
-                          lower = 0.025, upper = 0.5, a = 0.025, 
+                          lower = 0.0001, upper = 0.5, a = 0.025, 
                           alpha_ia = astar_ia_123, w = w, 
                           sig = cor_mat, 
                           tol = 1e-10)$root
 # H1 and H2
 w <- c(0.5, 0.5)
 astar_fa_12 <- w*uniroot(astar_fa_find, 
-                         lower = 0.025, upper = 0.5, a = 0.025, 
+                         lower = 0.0001, upper = 0.5, a = 0.025, 
                          alpha_ia = astar_ia_12, w = w, 
                          sig = cor_mat[c(1,2,4,5), c(1,2,4,5)], 
                          tol = 1e-10)$root
 # H1 and H3
 w <- c(0.3,0.7)
 astar_fa_13 <- w*uniroot(astar_fa_find, 
-                         lower = 0.025, upper = 0.5, a = 0.025, 
+                         lower = 0.0001, upper = 0.5, a = 0.025, 
                          alpha_ia = astar_ia_13, w = w, 
                          sig = cor_mat[c(1,3,4,6), c(1,3,4,6)], 
                          tol = 1e-10)$root
 # H2 and H3
 w <- c(0.3,0.7)
 astar_fa_23 <- w*uniroot(astar_fa_find, 
-                         lower = 0.025, upper = 0.5, a = 0.025, 
+                         lower = 0.0001, upper = 0.5, a = 0.025, 
                          alpha_ia = astar_ia_23, w = w, 
                          sig = cor_mat[c(2,3,5,6), c(2,3,5,6)], 
                          tol = 1e-10)$root
