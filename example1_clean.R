@@ -68,7 +68,7 @@ cor_mat <- matrix(c(
 # fraction at IA, we illustrate with below code which is more
 # general assuming common spending time at IA using population 3
 # information fraction 0.5 while actual event counts are used 
-# to compute bound
+# to account for correlation when computing bound
 
 # event count of each hypothesis at IA and FA
 e1 <- c(n11, n12)
