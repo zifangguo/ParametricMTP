@@ -24,7 +24,8 @@ set.seed(12345*i+j+321*task)
 
 ### # Simulation Setting 
 ## True HR A+B-, A-B+, A+B+, A-B-
-hr_mat <- matrix(c(0.75, 0.70, 0.65, 1,
+hr_mat <- matrix(c(0.75, 0.70, 0.65, 1.5,
+                   0.75, 0.70, 0.65, 1,
                    0.80, 0.75, 0.70, 1,
                    1,    1   , 1   , 1), byrow=TRUE, ncol=4)
 
